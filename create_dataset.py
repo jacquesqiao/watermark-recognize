@@ -3,12 +3,13 @@ import numpy as np
 from skimage import io
 from skimage.transform import resize
 
+
 def create_data():
     image_path_array=[]
     lable_array=[]
     with open('train.list','r') as f:
         for line in f:
-            image_path,label=line.strip().split('\t')
+            image_path,label=line.strip().split(' ')
             image_path_array.append(image_path)
             if int(label)==1:
                 label=1
@@ -23,7 +24,7 @@ def create_data():
     test_lable_array=[]
     with open('val.list','r') as f:
         for line in f:
-            image_path,label=line.strip().split('\t')
+            image_path,label=line.strip().split(' ')
             test_image_path_array.append(image_path)
             if int(label)==1:
                 label=1
@@ -36,12 +37,37 @@ def create_data():
     np.savez("wx_model.npz",x_train=x_train,y_train=y_train,x_test=x_test,y_test=y_test)
     print x_train.shape,y_train.shape,x_test.shape,y_test.shape
 
+
 def load_data():
-    f=np.load("wx_model.npz")
+    f = np.load("wx_model.npz")
     x_train, y_train = f['x_train'], f['y_train']
     x_test, y_test = f['x_test'], f['y_test']
     f.close()
     return (x_train, y_train), (x_test, y_test)
 
+
+def train_reader():
+    def reader():
+        (x_train, y_train), (x_test, y_test) = load_data()
+        for i in range(len(x_train)):
+            data = x_train[i].flatten()
+            label = y_train[i]
+            yield (data / 255.0).astype(np.float32), int(label)
+
+    return reader
+
+
+def test_reader():
+    def reader():
+        (x_train, y_train), (x_test, y_test) = load_data()
+        for i in range(len(x_train)):
+            data = x_train[i].flatten()
+            label = y_train[i]
+            yield (data / 255.0).astype(np.float32), int(label)
+
+    return reader
+
+
 if __name__=="__main__":
-	create_data()
+    create_data()
+
