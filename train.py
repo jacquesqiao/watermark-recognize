@@ -16,14 +16,18 @@ import sys, os
 
 import paddle.v2 as paddle
 
-from vgg import vgg_bn_drop
+# from vgg import vgg_bn_drop
 from resnet import resnet_cifar10
+import create_dataset
 
 with_gpu = os.getenv('WITH_GPU', '0') != '0'
 
+BATCH_SIZE=2
+
 
 def main():
-    datadim = 3 * 32 * 32
+    # datadim = 3 * 32 * 32
+    datadim = 200 * 200
     classdim = 10
 
     # PaddlePaddle init
@@ -34,9 +38,9 @@ def main():
 
     # Add neural network config
     # option 1. resnet
-    # net = resnet_cifar10(image, depth=32)
+    net = resnet_cifar10(image, depth=32)
     # option 2. vgg
-    net = vgg_bn_drop(image)
+    # net = vgg_bn_drop(image)
 
     out = paddle.layer.fc(
         input=net, size=classdim, act=paddle.activation.Softmax())
@@ -77,21 +81,20 @@ def main():
 
             result = trainer.test(
                 reader=paddle.batch(
-                    paddle.dataset.cifar.test10(), batch_size=128),
+                    create_dataset.train_reader(), batch_size=BATCH_SIZE),
                 feeding={'image': 0,
                          'label': 1})
             print "\nTest with Pass %d, %s" % (event.pass_id, result.metrics)
 
     # Save the inference topology to protobuf.
-    inference_topology = paddle.topology.Topology(layers=out)
-    with open("inference_topology.pkl", 'wb') as f:
-        inference_topology.serialize_for_inference(f)
+    # inference_topology = paddle.topology.Topology(layers=out)
+    # with open("inference_topology.pkl", 'wb') as f:
+    #     inference_topology.serialize_for_inference(f)
 
     trainer.train(
         reader=paddle.batch(
-            paddle.reader.shuffle(
-                paddle.dataset.cifar.train10(), buf_size=50000),
-            batch_size=128),
+            paddle.reader.shuffle(create_dataset.train_reader(), buf_size=1000),
+            batch_size=BATCH_SIZE),
         num_passes=200,
         event_handler=event_handler,
         feeding={'image': 0,

@@ -64,7 +64,7 @@ def resnet_cifar10(ipt, depth=32):
     n = (depth - 2) / 6
     nStages = {16, 64, 128}
     conv1 = conv_bn_layer(
-        ipt, ch_in=3, ch_out=16, filter_size=3, stride=1, padding=1)
+        ipt, ch_in=1, ch_out=16, filter_size=3, stride=1, padding=1)
     res1 = layer_warp(basicblock, conv1, 16, 16, n, 1)
     res2 = layer_warp(basicblock, res1, 16, 32, n, 2)
     res3 = layer_warp(basicblock, res2, 32, 64, n, 2)
