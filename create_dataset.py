@@ -61,8 +61,8 @@ def test_reader():
     def reader():
         (x_train, y_train), (x_test, y_test) = load_data()
         for i in range(len(x_train)):
-            data = x_train[i].flatten()
-            label = y_train[i]
+            data = x_test[i].flatten()
+            label = y_test[i]
             yield (data / 255.0).astype(np.float32), int(label)
 
     return reader

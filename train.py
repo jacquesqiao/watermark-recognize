@@ -12,23 +12,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License
 
-import sys, os
+import os
+import sys
 
 import paddle.v2 as paddle
 
-# from vgg import vgg_bn_drop
-from resnet import resnet_cifar10
 import create_dataset
+from resnet import resnet_cifar10
 
 with_gpu = os.getenv('WITH_GPU', '0') != '0'
 
-BATCH_SIZE=2
+BATCH_SIZE = 32
 
 
 def main():
     # datadim = 3 * 32 * 32
     datadim = 200 * 200
-    classdim = 10
+    classdim = 2
 
     # PaddlePaddle init
     paddle.init(use_gpu=with_gpu, trainer_count=1)
@@ -55,10 +55,10 @@ def main():
     # Create optimizer
     momentum_optimizer = paddle.optimizer.Momentum(
         momentum=0.9,
-        regularization=paddle.optimizer.L2Regularization(rate=0.0002 * 128),
-        learning_rate=0.1 / 128.0,
+        regularization=paddle.optimizer.L2Regularization(rate=0.0002 * BATCH_SIZE),
+        learning_rate=0.1 / BATCH_SIZE,
         learning_rate_decay_a=0.1,
-        learning_rate_decay_b=50000 * 100,
+        learning_rate_decay_b=25655 * 20,
         learning_rate_schedule='discexp')
 
     # Create trainer
@@ -81,7 +81,7 @@ def main():
 
             result = trainer.test(
                 reader=paddle.batch(
-                    create_dataset.train_reader(), batch_size=BATCH_SIZE),
+                    create_dataset.test_reader(), batch_size=BATCH_SIZE),
                 feeding={'image': 0,
                          'label': 1})
             print "\nTest with Pass %d, %s" % (event.pass_id, result.metrics)
