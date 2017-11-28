@@ -9,7 +9,7 @@ def create_data():
     lable_array=[]
     with open('train.list','r') as f:
         for line in f:
-            image_path,label=line.strip().split(' ')
+            image_path,label=line.strip().split('\t')
             image_path_array.append(image_path)
             if int(label)==1:
                 label=1
@@ -24,7 +24,7 @@ def create_data():
     test_lable_array=[]
     with open('val.list','r') as f:
         for line in f:
-            image_path,label=line.strip().split(' ')
+            image_path,label=line.strip().split('\t')
             test_image_path_array.append(image_path)
             if int(label)==1:
                 label=1
@@ -52,7 +52,7 @@ def train_reader():
         for i in range(len(x_train)):
             data = x_train[i].flatten()
             label = y_train[i]
-            yield (data / 255.0).astype(np.float32), int(label)
+            yield (data).astype(np.float32), int(label)
 
     return reader
 
@@ -61,9 +61,9 @@ def test_reader():
     def reader():
         (x_train, y_train), (x_test, y_test) = load_data()
         for i in range(len(x_train)):
-            data = x_train[i].flatten()
-            label = y_train[i]
-            yield (data / 255.0).astype(np.float32), int(label)
+            data = x_test[i].flatten()
+            label = y_test[i]
+            yield (data).astype(np.float32), int(label)
 
     return reader
 

@@ -22,16 +22,16 @@ import create_dataset
 
 with_gpu = os.getenv('WITH_GPU', '0') != '0'
 
-BATCH_SIZE=2
+BATCH_SIZE=32
 
 
 def main():
     # datadim = 3 * 32 * 32
     datadim = 200 * 200
-    classdim = 10
+    classdim = 2
 
     # PaddlePaddle init
-    paddle.init(use_gpu=with_gpu, trainer_count=1)
+    paddle.init(use_gpu=True, trainer_count=4)
 
     image = paddle.layer.data(
         name="image", type=paddle.data_type.dense_vector(datadim))
@@ -55,9 +55,9 @@ def main():
     # Create optimizer
     momentum_optimizer = paddle.optimizer.Momentum(
         momentum=0.9,
-        regularization=paddle.optimizer.L2Regularization(rate=0.0002 * 128),
-        learning_rate=0.1 / 128.0,
-        learning_rate_decay_a=0.1,
+        regularization=paddle.optimizer.L2Regularization(rate=0.0002 * BATCH_SIZE),
+        learning_rate=0.5e-6,
+        learning_rate_decay_a=0.01,
         learning_rate_decay_b=50000 * 100,
         learning_rate_schedule='discexp')
 
@@ -68,7 +68,7 @@ def main():
     # End batch and end pass event handler
     def event_handler(event):
         if isinstance(event, paddle.event.EndIteration):
-            if event.batch_id % 100 == 0:
+            if event.batch_id % 10 == 0:
                 print "\nPass %d, Batch %d, Cost %f, %s" % (
                     event.pass_id, event.batch_id, event.cost, event.metrics)
             else:
@@ -93,7 +93,7 @@ def main():
 
     trainer.train(
         reader=paddle.batch(
-            paddle.reader.shuffle(create_dataset.train_reader(), buf_size=1000),
+            paddle.reader.shuffle(create_dataset.train_reader(), buf_size=10000),
             batch_size=BATCH_SIZE),
         num_passes=200,
         event_handler=event_handler,
